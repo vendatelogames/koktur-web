@@ -1,0 +1,14 @@
+{
+  "name": "KOKTUR — AI-помощник",
+  "short_name": "KOKTUR",
+  "description": "Персональный AI-помощник для идей, обучения и создания проектов.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07100f",
+  "theme_color": "#071110",
+  "icons": [
+    { "src": "assets/koktur-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

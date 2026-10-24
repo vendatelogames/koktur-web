@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071110">
+  <meta name="color-scheme" content="dark light">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://koktur-core.vendatelogames.workers.dev; worker-src 'self'">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="description" content="KOKTUR — персональный AI для идей, обучения, программирования и создания проектов. Исследуй возможности и начни общаться с KOKTUR.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="KOKTUR — Меньше границ. Больше возможного.">
+  <meta property="og:description" content="Персональное AI-пространство для мышления, создания и роста.">
+  <meta property="og:image" content="https://vendatelogames.github.io/Koktur-AI/assets/koktur-mark.svg">
+  <title>KOKTUR — персональный AI · Vendatelo Studio</title>
+  <link rel="icon" href="assets/koktur-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="koktur" class="landing-active">
+  <div class="landing-stage" id="landingStage" aria-label="Знакомство с KOKTUR">
+    <div class="landing-mesh" aria-hidden="true"></div>
+    <div class="landing-grain" aria-hidden="true"></div>
+    <div class="landing-loader" id="landingLoader" aria-hidden="true">
+      <div class="loader-mark"><img src="assets/koktur-mark.svg" alt=""></div>
+      <div class="loader-name">KOKTUR<span>.</span></div>
+      <div class="loader-track"><span></span></div>
+      <div class="loader-caption">INITIALIZING INTELLIGENCE</div>
+    </div>
+    <header class="landing-nav">
+      <a class="landing-brand" href="#top" aria-label="KOKTUR — начало страницы">
+        <span class="landing-brand-mark"><img src="assets/koktur-mark.svg" alt=""></span>
+        <span><strong>KOKTUR</strong><small>BY VENDATELO STUDIO</small></span>
+      </a>
+      <nav class="landing-nav-links" aria-label="Главная навигация">
+        <a href="#capabilities">Возможности</a>
+        <a href="#security">Приватность</a>
+        <a href="#community">Сообщество</a>
+      </nav>
+      <div class="landing-nav-actions">
+        <button class="landing-login" id="landingLoginBtn">Войти</button>
+        <button class="landing-register" id="landingRegisterBtn">Создать аккаунт <span>↗</span></button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="landing-hero">
+        <div class="landing-hero-copy">
+          <div class="landing-status-pill"><span class="landing-status-dot" id="landingStatusDot"></span><span id="landingCoreStatus">ПОДКЛЮЧАЕМ KOKTUR CORE</span><span class="status-pill-sep">/</span><span>PERSONAL AI</span></div>
+          <div class="landing-kicker"><span></span> ТВОЯ ИДЕЯ — СЛЕДУЮЩИЙ УРОВЕНЬ</div>
+          <h1>Меньше границ.<br><span>Больше возможного.</span></h1>
+          <p class="landing-lead">KOKTUR — твоё персональное AI-пространство для мышления, создания и роста. Разбирай сложное, превращай идеи в проекты и двигайся от вопроса к реальному результату.</p>
+          <div class="landing-hero-actions">
+            <button class="landing-primary-cta" id="enterChatBtn"><span class="cta-icon">✳</span> Общаться с ИИ <span class="cta-arrow">↗</span></button>
+            <button class="landing-secondary-cta" id="landingLearnBtn">Исследовать возможности <span>↓</span></button>
+          </div>
+          <div class="landing-proof-line"><span class="proof-symbol">◇</span><span>Один помощник для учёбы, кода и собственных проектов</span></div>
+          <div class="landing-social-proof">
+            <a href="https://t.me/koktur_bot" target="_blank" rel="noopener noreferrer"><span class="social-orb">↗</span><span><small>ОТКРЫТЬ БОТА</small><strong>@koktur_bot</strong></span></a>
+            <span class="social-proof-divider"></span>
+            <a href="https://t.me/vendatelostudios" target="_blank" rel="noopener noreferrer"><span class="social-orb gold">✦</span><span><small>СТУДИЯ СОЗДАТЕЛЕЙ</small><strong>@vendatelostudios</strong></span></a>
+          </div>
+        </div>
+
+        <div class="landing-hero-visual" id="landingVisual" aria-label="Анимированная эмблема KOKTUR">
+          <div class="visual-grid-floor" aria-hidden="true"></div>
+          <div class="visual-halo halo-a" aria-hidden="true"></div><div class="visual-halo halo-b" aria-hidden="true"></div>
+          <div class="core-object" id="coreObject">
+            <div class="core-orbit orbit-outer"><span></span><i></i></div>
+            <div class="core-orbit orbit-mid"><span></span><i></i></div>
+            <div class="core-orbit orbit-inner"><span></span><i></i></div>
+            <div class="core-disc disc-back"></div>
+            <div class="core-disc disc-front"></div>
+            <div class="core-glass"><div class="core-glass-reflection"></div><div class="core-icon-frame"><img src="assets/koktur-mark.svg" alt="Знак KOKTUR"></div><span class="core-crosshair crosshair-a"></span><span class="core-crosshair crosshair-b"></span></div>
+            <div class="core-bottom-light"></div>
+          </div>
+          <div class="visual-tag tag-analysis"><span class="tag-icon">◈</span><span><small>COGNITIVE ENGINE</small><strong>ANALYZE / THINK</strong></span><i></i></div>
+          <div class="visual-tag tag-creation"><span class="tag-icon gold">✧</span><span><small>IDEA → ACTION</small><strong>CREATE / BUILD</strong></span><i></i></div>
+          <div class="visual-coordinates"><span>51°10' N</span><span class="coord-line"></span><span>KOKTUR CORE · 01</span></div>
+          <div class="visual-edge-label">DESIGNED IN KAZAKHSTAN <span>✳</span></div>
+        </div>
+      </section>
+
+      <section class="landing-capabilities" id="capabilities">
+        <div class="section-heading"><div><div class="landing-kicker"><span></span> ONE INTELLIGENCE. MANY DIRECTIONS.</div><h2>Идеи не должны<br><span>оставаться идеями.</span></h2></div><p>От первого вопроса до готового результата — выбирай направление, формулируй задачу и создавай своё.</p></div>
+        <div class="capability-grid">
+          <article class="capability-card"><div class="capability-index">01 / THINK</div><div class="capability-symbol symbol-mint">⌘</div><h3>Разбирай сложное</h3><p>Структурируй мысли, изучай новые темы, сравнивай варианты и находи следующие шаги.</p><div class="capability-bottom"><span>АНАЛИЗ · ОБУЧЕНИЕ</span><span>↗</span></div></article>
+          <article class="capability-card"><div class="capability-index">02 / CREATE</div><div class="capability-symbol symbol-gold">✧</div><h3>Создавай своё</h3><p>Работай над кодом, продуктами, текстами и идеями — в своём темпе и стиле.</p><div class="capability-bottom"><span>КОД · ПРОЕКТЫ</span><span>↗</span></div></article>
+          <article class="capability-card"><div class="capability-index">03 / GROW</div><div class="capability-symbol symbol-blue">↗</div><h3>Расти каждый день</h3><p>Разбивай большие цели на понятные действия и возвращайся к важным разговорам.</p><div class="capability-bottom"><span>ПЛАНЫ · РАЗВИТИЕ</span><span>↗</span></div></article>
+          <article class="capability-card capability-card-featured"><div class="capability-index">04 / CONNECT</div><div class="capability-symbol symbol-white">◉</div><h3>Своя экосистема</h3><p>Развивай KOKTUR на сайте, Windows и Android. Общая облачная история требует входа в один аккаунт и подключённого серверного синхронизатора.</p><div class="capability-bottom"><span>WEB · WINDOWS · ANDROID</span><span>↗</span></div></article>
+        </div>
+      </section>
+
+      <section class="landing-trust" id="security">
+        <div class="trust-orbit" aria-hidden="true"><div class="trust-orbit-core"><img src="assets/koktur-mark.svg" alt=""></div><span></span><i></i></div>
+        <div class="trust-copy"><div class="landing-kicker"><span></span> CONTROL IS PART OF THE DESIGN</div><h2>Технологии должны<br><span>работать на тебя.</span></h2><p>В KOKTUR есть настройки персонализации и управления данными. Не отправляй пароли, секретные ключи и другую конфиденциальную информацию в чат. AI может ошибаться — важные решения стоит проверять.</p><div class="trust-points"><div><span>01</span><strong>Отдельный аккаунт KOKTUR</strong><small>Не используй пароль от почты</small></div><div><span>02</span><strong>Понятные настройки</strong><small>Темы, история и параметры интерфейса</small></div><div><span>03</span><strong>Контроль над диалогами</strong><small>Управляй историей в своём рабочем пространстве</small></div></div><button class="landing-inline-cta" id="landingTrustChatBtn">Начать работу с KOKTUR <span>↗</span></button></div>
+      </section>
+
+      <section class="landing-community" id="community"><div class="community-heading"><div class="landing-kicker"><span></span> BUILT WITH VENDATELO STUDIO</div><h2>Будь ближе<br>к <span>тому, что создаётся.</span></h2><p>Новости, заметки о развитии и прямой путь к проекту KOKTUR.</p></div>
+        <div class="community-links">
+          <a class="community-link" href="https://t.me/vendatelostudios" target="_blank" rel="noopener noreferrer"><span class="community-link-icon">✦</span><span><small>STUDIO / OFFICIAL</small><strong>VENDATELO STUDIO</strong><em>@vendatelostudios</em></span><b>↗</b></a>
+          <a class="community-link" href="https://t.me/koktur_ai" target="_blank" rel="noopener noreferrer"><span class="community-link-icon ai">◈</span><span><small>KOKTUR / UPDATES</small><strong>Канал KOKTUR AI</strong><em>@koktur_ai · новости и обновления</em></span><b>↗</b></a>
+          <a class="community-link" href="https://t.me/koktur_bot" target="_blank" rel="noopener noreferrer"><span class="community-link-icon bot">✳</span><span><small>TRY THE BOT</small><strong>Общаться с ботом</strong><em>@koktur_bot</em></span><b>↗</b></a>
+        </div>
+      </section>
+
+      <footer class="landing-footer"><a class="footer-brand" href="#top"><img src="assets/koktur-mark.svg" alt=""><strong>KOKTUR</strong></a><span>PERSONAL AI / MADE IN KAZAKHSTAN</span><span>© <span id="landingYear"></span> VENDATELO STUDIO</span><button id="landingFooterChat">Войти в пространство ↗</button></footer>
+    </main>
+  </div>
+
+  <canvas id="ambience" aria-hidden="true"></canvas>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Главная навигация">
+      <div class="brand-row">
+        <a class="brand" href="./" aria-label="KOKTUR — главная">
+          <span class="brand-mark"><img src="assets/koktur-mark.svg" alt=""></span>
+          <span class="brand-copy"><strong>KOKTUR</strong><small>INTELLIGENCE / STUDIO</small></span>
+        </a>
+        <button class="icon-button sidebar-close" id="closeSidebar" aria-label="Закрыть меню" title="Закрыть меню">×</button>
+      </div>
+      <button class="new-chat" id="newChatBtn"><span class="plus">＋</span><span>Новый диалог</span><kbd>Ctrl K</kbd></button>
+      <div class="side-label">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+      <nav class="nav-list" aria-label="Разделы">
+        <button class="nav-item active" data-view="chat"><span class="nav-icon">◈</span><span>Чат с KOKTUR</span><span class="nav-dot"></span></button>
+        <button class="nav-item" data-view="library"><span class="nav-icon">▤</span><span>Библиотека</span></button>
+        <button class="nav-item" data-view="history"><span class="nav-icon">◷</span><span>История диалогов</span></button>
+      </nav>
+      <div class="history-head"><span class="side-label">НЕДАВНИЕ</span><button class="mini-icon" id="clearSearch" title="Сбросить поиск" aria-label="Сбросить поиск">⌕</button></div>
+      <label class="history-search"><span>⌕</span><input id="historySearch" placeholder="Найти диалог" autocomplete="off"></label>
+      <div class="history-list" id="historyList" aria-live="polite"></div>
+      <div class="sidebar-spacer"></div>
+      <div class="social-links" id="socialLinks" aria-label="Социальные сети"></div>
+      <div class="side-bottom-card">
+        <div class="status-line"><span class="status-light" id="statusLight"></span><span id="connectionLabel">Проверка ядра…</span></div>
+        <div class="side-bottom-meta">KOKTUR CORE <span id="coreVersion">WEB 1.0</span></div>
+      </div>
+      <button class="profile-button" id="profileBtn">
+        <span class="avatar" id="avatarInitial">K</span><span class="profile-copy"><strong id="profileName">Гость KOKTUR</strong><small>Профиль этого устройства</small></span><span class="more">···</span>
+      </button>
+    </aside>
+    <div class="mobile-scrim" id="mobileScrim"></div>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-left"><button class="icon-button menu-toggle" id="openSidebar" aria-label="Открыть меню">☰</button><div class="mobile-brand"><img src="assets/koktur-mark.svg" alt=""><strong>KOKTUR</strong></div><span class="breadcrumb" id="breadcrumb">Пространство интеллекта <span>/</span> <strong>Новый диалог</strong></span></div>
+        <div class="topbar-actions">
+          <button class="theme-trigger" id="themeTrigger" aria-haspopup="dialog" aria-expanded="false"><span class="theme-swatch" id="themeSwatch"></span><span id="themeLabel">KOKTUR</span><span class="chevron">⌄</span></button>
+          <button class="icon-button" id="settingsBtn" aria-label="Настройки" title="Настройки">⚙</button>
+          <a class="top-link" id="websiteLink" href="#" target="_blank" rel="noopener" hidden>Наш сайт ↗</a>
+        </div>
+      </header>
+
+      <section class="workspace" id="workspace">
+        <div class="welcome" id="welcome">
+          <div class="hero-mark-wrap"><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div><div class="hero-mark"><img src="assets/koktur-mark.svg" alt="Символ KOKTUR"></div><span class="orbit-orb"></span></div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR THOUGHTS, AMPLIFIED <span class="eyebrow-line"></span></div>
+          <h1>Думай <span>шире.</span><br>Создавай смелее.</h1>
+          <p class="hero-subtitle">Твоя идея — отправная точка. KOKTUR помогает исследовать, создавать, учиться и находить решения.</p>
+          <div class="welcome-pills"><span><i>✦</i> Идеи и анализ</span><span><i>⌘</i> Код и технологии</span><span><i>↗</i> Учёба и развитие</span></div>
+          <div class="suggestion-grid" id="suggestionGrid">
+            <button class="suggestion-card" data-prompt="Помоги превратить мою идею в чёткий пошаговый план."><span class="suggestion-icon violet">✧</span><span><strong>Разложи идею по полочкам</strong><small>От замысла до плана действий</small></span><span class="card-arrow">↗</span></button>
+            <button class="suggestion-card" data-prompt="Объясни сложную тему простыми словами и приведи пример."><span class="suggestion-icon mint">◇</span><span><strong>Объясни сложное просто</strong><small>Понятно, по шагам, с примерами</small></span><span class="card-arrow">↗</span></button>
+            <button class="suggestion-card" data-prompt="Помоги написать, проверить и улучшить код. Сначала уточни задачу, если контекста недостаточно."><span class="suggestion-icon gold">⌘</span><span><strong>Создай что-то полезное</strong><small>Код, проекты и цифровые продукты</small></span><span class="card-arrow">↗</span></button>
+            <button class="suggestion-card" data-prompt="Предложи необычные идеи для моего проекта и объясни плюсы и риски каждой."><span class="suggestion-icon blue">✳</span><span><strong>Найди новый угол зрения</strong><small>Альтернативы и свежие подходы</small></span><span class="card-arrow">↗</span></button>
+          </div>
+        </div>
+
+        <section class="alternate-view" id="alternateView" hidden></section>
+        <div class="conversation" id="conversation" aria-live="polite" aria-label="Сообщения диалога"></div>
+      </section>
+
+      <footer class="composer-area">
+        <div class="composer-shell" id="composerShell">
+          <div class="composer-tools"><span class="composer-context"><span class="status-light"></span> KOKTUR CORE <span class="tiny-divider">/</span> <span id="composerTheme">KOKTUR</span></span><span class="composer-hint">Enter — отправить <span>·</span> Shift + Enter — перенос</span></div>
+          <textarea id="messageInput" rows="1" maxlength="8000" placeholder="Спроси KOKTUR о чём угодно…" aria-label="Введите сообщение"></textarea>
+          <div class="composer-bottom"><div class="composer-left"><button class="tool-button" id="attachHint" title="Прикрепление файлов пока не подключено" aria-label="Прикрепление файлов пока не подключено">＋ <span>Инструменты</span></button><button class="tool-button" id="thinkToggle" aria-pressed="false"><span class="sparkle">✧</span> Глубокое размышление <span class="toggle-dot"></span></button></div><button class="send-button" id="sendBtn" aria-label="Отправить сообщение" disabled><span>Отправить</span><span class="send-arrow">↗</span></button></div>
+        </div>
+        <div class="disclaimer">KOKTUR может ошибаться. Проверяй важную информацию и не отправляй конфиденциальные данные.</div>
+        <div class="studio-credit">CRAFTED WITH INTENT BY <strong>VENDATELO STUDIO</strong></div>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="modal theme-modal" id="themeModal" aria-labelledby="themeTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">PERSONALISE YOUR SPACE</div><h2 id="themeTitle">Выбери атмосферу</h2><p>Цвета, детали и фон меняются вместе с темой.</p></div><button class="icon-button" data-close="themeModal" aria-label="Закрыть">×</button></div><div class="theme-grid" id="themeGrid"></div><div class="modal-footnote">Декорации работают на фоне и не перекрывают текст.</div></dialog>
+
+  <dialog class="modal settings-modal" id="settingsModal" aria-labelledby="settingsTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">CONTROL CENTER</div><h2 id="settingsTitle">Настройки</h2><p>Управляй интерфейсом и подключением.</p></div><button class="icon-button" data-close="settingsModal" aria-label="Закрыть">×</button></div>
+    <div class="settings-tabs"><button class="settings-tab active" data-settings-tab="general">Основные</button><button class="settings-tab" data-settings-tab="connection">Подключение</button><button class="settings-tab" data-settings-tab="data">Данные</button></div>
+    <section class="settings-pane" data-settings-pane="general"><label class="field-label" for="displayName">Имя профиля на этом устройстве</label><input class="text-field" id="displayName" maxlength="40" placeholder="Как к тебе обращаться?"><div class="setting-row"><div><strong>Сниженное движение</strong><small>Уменьшить эффекты и анимации</small></div><label class="switch"><input type="checkbox" id="reduceMotion"><span></span></label></div><div class="setting-row"><div><strong>Плотный вид сообщений</strong><small>Больше текста на экране</small></div><label class="switch"><input type="checkbox" id="compactMode"><span></span></label></div></section>
+    <section class="settings-pane" data-settings-pane="connection" hidden><label class="field-label" for="apiEndpoint">Адрес KOKTUR CORE</label><input class="text-field" id="apiEndpoint" type="url" spellcheck="false"><p class="help-text">Обычно: https://koktur-core.vendatelogames.workers.dev. Адрес не является секретом. Ключи API нельзя хранить в браузере.</p><button class="secondary-button" id="testConnection">Проверить соединение <span>↗</span></button><p id="connectionTestResult" class="test-result" aria-live="polite"></p></section>
+    <section class="settings-pane" data-settings-pane="data" hidden><p class="help-text">Без входа история хранится локально. После входа KOKTUR синхронизирует чаты через общий сервер и базу данных; темы и часть внешних настроек пока остаются локальными.</p><div class="data-actions"><button class="secondary-button" id="exportData">Экспортировать данные <span>↓</span></button><button class="danger-button" id="clearAllData">Удалить все локальные данные</button></div></section>
+    <div class="modal-actions"><button class="secondary-button" data-close="settingsModal">Закрыть</button><button class="primary-button" id="saveSettings">Сохранить настройки <span>✓</span></button></div>
+  </dialog>
+
+  <dialog class="modal profile-modal" id="profileModal" aria-labelledby="profileTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">LOCAL PROFILE</div><h2 id="profileTitle">Твой профиль</h2><p>Имя и настройки сохраняются в этом браузере.</p></div><button class="icon-button" data-close="profileModal" aria-label="Закрыть">×</button></div><div class="profile-card"><div class="large-avatar" id="largeAvatar">K</div><div><strong id="profileModalName">Гость KOKTUR</strong><small>Локальный профиль · без облачной учётной записи</small></div></div><button class="primary-button full-button" id="editProfile">Изменить имя в настройках <span>↗</span></button><button class="secondary-button full-button" id="openAccountBtn">Войти и синхронизировать чаты <span>☁</span></button><p class="help-text">Войди в один аккаунт на сайте, Android и Windows, чтобы хранить историю диалогов в общей облачной базе. Не используй пароль от почты или других важных аккаунтов.</p></dialog>
+
+  <dialog class="modal profile-modal" id="accountModal" aria-labelledby="accountTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">KOKTUR CLOUD</div><h2 id="accountTitle">Войти в KOKTUR</h2><p id="accountDescription">Продолжи работу в своём общем пространстве.</p></div><button class="icon-button" data-close="accountModal" aria-label="Закрыть">×</button></div><div class="setting-row"><div><strong id="cloudAccountIdentity">Не выполнен вход</strong><small id="cloudAccountStatus">История пока сохраняется только на этом устройстве.</small></div><span aria-hidden="true">☁</span></div><label class="field-label" for="cloudEmail">Электронная почта</label><input class="text-field" id="cloudEmail" type="email" maxlength="254" autocomplete="username" placeholder="you@example.com"><label class="field-label" for="cloudPassword">Пароль KOKTUR</label><input class="text-field" id="cloudPassword" type="password" minlength="10" maxlength="128" autocomplete="current-password" placeholder="Не менее 10 символов"><p class="help-text">Это отдельный пароль KOKTUR. Не используй пароль от почты или других сервисов. Сессия сохраняется на этом устройстве; её можно завершить кнопкой выхода.</p><button class="auth-mode-switch" id="switchAuthMode" type="button">Нужна регистрация? Создать аккаунт</button><div class="data-actions"><button class="primary-button" id="cloudLoginBtn">Войти</button><button class="secondary-button" id="cloudRegisterBtn">Создать аккаунт</button></div><button class="secondary-button full-button" id="cloudSyncBtn">Синхронизировать сейчас ↻</button><button class="danger-button full-button" id="cloudLogoutBtn">Выйти из аккаунта</button><p id="cloudAccountMessage" class="test-result" aria-live="polite"></p></dialog>
+
+  <dialog class="modal library-modal" id="libraryModal" aria-labelledby="libraryTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">YOUR WORKSPACE</div><h2 id="libraryTitle">Библиотека</h2><p>Твои сохранённые ответы и полезные материалы.</p></div><button class="icon-button" data-close="libraryModal" aria-label="Закрыть">×</button></div><div id="libraryContent" class="library-content"></div></dialog>
+
+  <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
+  <script src="site-config.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
