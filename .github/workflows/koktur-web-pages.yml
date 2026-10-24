@@ -1,0 +1,63 @@
+name: KOKTUR Windows Build
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis --yes --no-progress
+
+      - name: Install Tauri CLI v2
+        shell: pwsh
+        run: cargo install tauri-cli --version "^2.0" --locked
+
+      - name: Check project files
+        shell: pwsh
+        run: |
+          if (!(Test-Path "desktop/frontend/index.html")) { throw "Missing frontend index.html" }
+          if (!(Test-Path "desktop/src-tauri/tauri.conf.json")) { throw "Missing Tauri config" }
+          if (!(Test-Path "desktop/src-tauri/icons/icon.ico")) { throw "Missing Windows icon" }
+          Get-Content "desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json | Out-Null
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: cargo tauri build --bundles nsis
+        working-directory: desktop
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOKTUR-Windows-Installer
+          path: desktop/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Attach installer to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: desktop/src-tauri/target/release/bundle/nsis/*.exe
