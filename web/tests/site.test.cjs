@@ -81,3 +81,39 @@ test('landing adds a restrictive public-site Content Security Policy', () => {
     assert.match(anchor, /rel="noopener noreferrer"/);
   }
 });
+
+test('homepage exposes crawlable SEO metadata and local sitemap assets', () => {
+  assert.match(html, /<title>KOKTUR AI — персональный ИИ-помощник \| Vendatelo Studio<\/title>/);
+  assert.match(html, /name="description" content="[^"]{40,}"/);
+  assert.match(html, /name="robots" content="index,follow/);
+  assert.match(html, /rel="canonical" href="https:\/\/vendatelogames\.github\.io\/koktur-web\/"/);
+  assert.match(html, /og:image" content="https:\/\/vendatelogames\.github\.io\/koktur-web\/assets\/koktur-og\.png/);
+  const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
+  const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  assert.match(robots, /Allow: \/\n/);
+  assert.match(robots, /Sitemap: https:\/\/vendatelogames\.github\.io\/koktur-web\/sitemap\.xml/);
+  assert.match(sitemap, /<loc>https:\/\/vendatelogames\.github\.io\/koktur-web\/<\/loc>/);
+  assert.ok(fs.existsSync(path.join(root, 'assets', 'koktur-og.png')));
+});
+
+
+test('landing scroll motion reveals sections and moves/recolors the lightweight 3D emblem', () => {
+  assert.match(html, /id="coreModelScroll"/);
+  assert.ok(js.includes('function initLandingMotion'));
+  assert.ok(js.includes('IntersectionObserver'));
+  assert.ok(js.includes("window.addEventListener('scroll',requestModelFrame,{passive:true})"));
+  assert.ok(js.includes("setProperty('--core-hue'"));
+  assert.ok(css.includes('.landing-stage.motion-ready .scroll-reveal.is-visible'));
+  assert.ok(css.includes('translate3d(var(--scroll-x,0px),var(--scroll-y,0px),0)'));
+  assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));
+  assert.ok(css.includes('.landing-low-power'));
+});
+
+
+test('service worker cache is versioned for the motion update', () => {
+  const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+  assert.match(sw, /koktur-web-shell-v1\.2\.4/);
+  assert.ok(sw.includes("'./styles.css'"));
+  assert.ok(sw.includes("'./app.js'"));
+  assert.ok(sw.includes("'./assets/koktur-og.png'"));
+});

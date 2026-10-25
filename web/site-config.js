@@ -2,7 +2,7 @@
 window.KOKTUR_CONFIG = {
   appName: "KOKTUR",
   coreApi: "https://koktur-core.vendatelogames.workers.dev",
-  websiteUrl: "",
+  websiteUrl: "https://vendatelogames.github.io/koktur-web/",
   socials: {
     instagram: "",
     telegram: "https://t.me/koktur_ai",

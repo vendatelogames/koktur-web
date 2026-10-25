@@ -1,5 +1,5 @@
-const CACHE = 'koktur-web-shell-v1.2.0';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './site-config.js', './manifest.webmanifest', './assets/koktur-mark.svg'];
+const CACHE = 'koktur-web-shell-v1.2.4';
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './site-config.js', './manifest.webmanifest', './robots.txt', './sitemap.xml', './assets/koktur-mark.svg', './assets/koktur-og.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

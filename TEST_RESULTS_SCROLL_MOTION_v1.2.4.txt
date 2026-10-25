@@ -1,0 +1,13 @@
+KOKTUR WEB SCROLL MOTION 1.2.4 — TEST RESULTS
+
+JavaScript syntax:
+- node --check web/app.js: PASS
+- node --check web/site-config.js: PASS
+
+Automated tests:
+- node --test web/tests/site.test.cjs: 11 tests, 11 passed, 0 failed.
+- node --test web/site.test.cjs: 5 tests, 5 passed, 0 failed.
+
+Coverage includes assets and unique IDs, AI/client contract invariants, themes and chats unchanged, landing-page CTAs, reduced-motion accessibility, scroll reveal behavior, scroll-bound 3D transforms and hue updates, low-power handling, and service-worker cache versioning.
+
+Not tested here: real-device FPS measurements, all Safari/mobile hardware, live GitHub Pages publication, and production Worker behavior. Motion performance varies by device/browser; the update favors CSS transforms/opacity, passive listeners, requestAnimationFrame coalescing, and skips scroll model updates when the hero is off-screen or the document is hidden.

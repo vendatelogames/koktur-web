@@ -146,12 +146,87 @@
       $('#messageInput').focus({preventScroll:true});
     },reduced?0:510);
   }
+  function initLandingMotion({visual,object,modelScroll}){
+    const stage=$('#landingStage');
+    if(!stage)return;
+    const mediaReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const connection= navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const lowPower=(Number.isFinite(navigator.hardwareConcurrency)&&navigator.hardwareConcurrency>0&&navigator.hardwareConcurrency<=4)
+      ||(Number.isFinite(navigator.deviceMemory)&&navigator.deviceMemory>0&&navigator.deviceMemory<=4)
+      ||!!connection?.saveData;
+    if(lowPower)stage.classList.add('landing-low-power');
+
+    const revealTargets=$$('.landing-capabilities .section-heading, .landing-capabilities .capability-card, .landing-trust .trust-orbit, .landing-trust .trust-copy, .landing-trust .trust-points > div, .landing-community .community-heading, .landing-community .community-link, .landing-footer',stage);
+    const reduceNow=()=>state.reduceMotion||mediaReduce.matches;
+    if(reduceNow()||!('IntersectionObserver' in window)){
+      revealTargets.forEach(el=>el.classList.add('scroll-reveal','is-visible'));
+    }else{
+      revealTargets.forEach((el,index)=>{el.classList.add('scroll-reveal');el.style.setProperty('--reveal-delay',`${Math.min((index%4)*70,210)}ms`);});
+      stage.classList.add('motion-ready');
+      const observer=new IntersectionObserver(entries=>{
+        for(const entry of entries){
+          if(!entry.isIntersecting)continue;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      },{root:null,rootMargin:'0px 0px -8% 0px',threshold:0.12});
+      revealTargets.forEach(el=>observer.observe(el));
+      mediaReduce.addEventListener?.('change',event=>{
+        if(!event.matches)return;
+        revealTargets.forEach(el=>el.classList.add('is-visible'));
+        stage.classList.remove('motion-ready');
+        observer.disconnect();
+      });
+    }
+
+    if(!visual||!object||!modelScroll)return;
+    if(reduceNow()){
+      modelScroll.style.removeProperty('--scroll-x');modelScroll.style.removeProperty('--scroll-y');modelScroll.style.removeProperty('--scroll-scale');
+      object.style.removeProperty('--scroll-tilt-x');object.style.removeProperty('--scroll-tilt-y');object.style.removeProperty('--core-hue');
+      return;
+    }
+    let scrollRaf=0;
+    let lastY=-1;
+    const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+    const updateModelOnScroll=()=>{
+      scrollRaf=0;
+      if(document.hidden||!document.body.classList.contains('landing-active')||stage.hidden)return;
+      const y=window.scrollY||window.pageYOffset||0;
+      if(Math.abs(y-lastY)<0.5)return;
+      lastY=y;
+      // Animate only while the hero is close to the viewport; skip expensive work after it leaves.
+      const hero=$('.landing-hero',stage);
+      if(!hero)return;
+      const heroRect=hero.getBoundingClientRect();
+      if(heroRect.bottom<-80||heroRect.top>window.innerHeight+80)return;
+      const travel=Math.max(1,Math.min(hero.offsetHeight*.82,window.innerHeight*1.12));
+      const progress=clamp(y/travel,0,1);
+      const curve=Math.sin(progress*Math.PI);
+      const powerScale=lowPower?.56:1;
+      const x=(Math.sin(progress*Math.PI*2)*16+progress*12)*powerScale;
+      const yShift=(-curve*32+progress*8)*powerScale;
+      modelScroll.style.setProperty('--scroll-x',`${x.toFixed(2)}px`);
+      modelScroll.style.setProperty('--scroll-y',`${yShift.toFixed(2)}px`);
+      modelScroll.style.setProperty('--scroll-scale',(1-progress*(lowPower?.018:.035)).toFixed(4));
+      object.style.setProperty('--scroll-tilt-x',`${(curve*(lowPower?5:10)).toFixed(2)}deg`);
+      object.style.setProperty('--scroll-tilt-y',`${(progress*(lowPower?12:24)).toFixed(2)}deg`);
+      object.style.setProperty('--core-hue',`${(progress*(lowPower?92:168)).toFixed(1)}deg`);
+    };
+    const requestModelFrame=()=>{if(!scrollRaf)scrollRaf=requestAnimationFrame(updateModelOnScroll);};
+    window.addEventListener('scroll',requestModelFrame,{passive:true});
+    window.addEventListener('resize',requestModelFrame,{passive:true});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestModelFrame();});
+    // Align the initial state without forcing a layout read on every scroll event.
+    requestModelFrame();
+  }
+
   function initLanding(){
     const shell=$('.app-shell');if(document.body.classList.contains('landing-active')&&shell)shell.inert=true;
     const year=$('#landingYear');if(year)year.textContent=String(new Date().getFullYear());
     const loader=$('#landingLoader');if(loader){const reduced=state.reduceMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches;window.setTimeout(()=>loader.classList.add('is-done'),reduced?100:1100);window.setTimeout(()=>{loader.hidden=true;},reduced?180:1750);}
-    const visual=$('#landingVisual'),object=$('#coreObject');
-    if(visual&&object&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){let rect=null;visual.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||state.reduceMotion)return;rect=rect||visual.getBoundingClientRect();const nx=(e.clientX-rect.left)/rect.width-.5,ny=(e.clientY-rect.top)/rect.height-.5;object.style.setProperty('--tilt-y',`${(nx*9).toFixed(2)}deg`);object.style.setProperty('--tilt-x',`${(-ny*7).toFixed(2)}deg`);});visual.addEventListener('pointerleave',()=>{rect=null;object.style.setProperty('--tilt-y','0deg');object.style.setProperty('--tilt-x','0deg');});}
+    const visual=$('#landingVisual'),object=$('#coreObject'),modelScroll=$('#coreModelScroll');
+    if(visual&&object&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){let rect=null;visual.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||state.reduceMotion)return;rect=rect||visual.getBoundingClientRect();const nx=(e.clientX-rect.left)/rect.width-.5,ny=(e.clientY-rect.top)/rect.height-.5;object.style.setProperty('--tilt-y',`${(nx*9).toFixed(2)}deg`);object.style.setProperty('--tilt-x',`${(-ny*7).toFixed(2)}deg`);},{passive:true});visual.addEventListener('pointerleave',()=>{rect=null;object.style.setProperty('--tilt-y','0deg');object.style.setProperty('--tilt-x','0deg');});}
+    initLandingMotion({visual,object,modelScroll});
     const enter=()=>enterChatFromLanding({newChat:!currentConversation()});
     $('#enterChatBtn')?.addEventListener('click',enter);$('#landingTrustChatBtn')?.addEventListener('click',enter);$('#landingFooterChat')?.addEventListener('click',enter);
     $('#landingLoginBtn')?.addEventListener('click',()=>openLandingAuth('login'));$('#landingRegisterBtn')?.addEventListener('click',()=>openLandingAuth('register'));

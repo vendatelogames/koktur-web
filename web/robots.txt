@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vendatelogames.github.io/koktur-web/sitemap.xml
