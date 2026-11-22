@@ -566,7 +566,7 @@
   async function startCamera(){
     setAttachmentMenu(false);
     if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){
-      toast('Камера недоступна в этом браузере. Используй «Фото» и выбери камеру устройства.','error');return;
+      $('#cameraInput').click();toast('Открыл стандартный выбор камеры или фото.');return;
     }
     const status=$('#cameraStatus');if(status)status.textContent='Запрашиваю доступ к камере…';
     try{
