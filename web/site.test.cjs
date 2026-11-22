@@ -7,6 +7,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const config = fs.readFileSync(path.join(root, 'site-config.js'), 'utf8');
+const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
 
 test('all local assets referenced by HTML exist', () => {
   const paths = [...html.matchAll(/(?:src|href)="(?!https?:|#)([^\"]+)"/g)].map(m => m[1]);
@@ -31,6 +32,26 @@ test('brand, themes, and chat capabilities are present', () => {
   assert.ok(js.includes('reasoningEffort:currentThinking'));
   assert.ok(js.includes('maxTokens:currentThinking'));
   assert.ok(js.includes("'response','reply','response_delta'"));
+});
+
+test('attachment picker exposes camera, photo, file and plugin actions', () => {
+  for (const id of ['attachHint','attachmentMenu','cameraAttachBtn','photoAttachBtn','fileAttachBtn','pluginAttachBtn','cameraInput','photoInput','fileInput','attachmentTray','cameraModal','pluginModal']) {
+    assert.match(html, new RegExp('id="' + id + '"'), `Missing attachment control: ${id}`);
+  }
+  assert.match(js, /getUserMedia/);
+  assert.match(js, /image:imageAttachment\.dataUrl/);
+  assert.match(js, /attachmentText/);
+  assert.match(js, /file\.text\(\)/);
+  assert.match(headers, /Permissions-Policy: camera=\(self\)/);
+  assert.match(css, /\.attachment-menu/);
+  assert.match(css, /\.attachment-tray/);
+});
+
+test('attachments are sent to CORE only on explicit chat submission and metadata is rendered safely', () => {
+  assert.match(js, /attachments:attachmentsToSend\.map\(attachmentMetadata\)/);
+  assert.match(js, /renderMessageAttachments/);
+  assert.match(js, /const requestBody=.*image:imageAttachment\.dataUrl/s);
+  assert.match(html, /только после/);
 });
 
 test('public configuration does not contain a secret-key assignment', () => {

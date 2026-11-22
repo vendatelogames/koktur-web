@@ -27,6 +27,8 @@
   let state = loadState();
   let sending = false;
   let abortController = null;
+  let pendingAttachments = [];
+  let cameraStream = null;
   let activeView = 'chat';
   let currentThinking = false;
   let authMode = 'login';
@@ -347,7 +349,7 @@
     const main=document.createElement('div');main.className='message-main';
     const meta=document.createElement('div');meta.className='message-meta';const who=document.createElement('strong');who.textContent=msg.role==='user'?(state.profileName||'Ты'):'KOKTUR';const time=document.createElement('span');time.textContent=formatTime(msg.createdAt||Date.now());meta.append(who,time);
     const content=document.createElement('div');content.className='message-content';content.innerHTML=renderMarkdown(msg.content||'');
-    main.append(meta,content);
+    main.append(meta,content);renderMessageAttachments(main,msg.attachments);
     if(msg.role==='assistant' && msg.content){const actions=document.createElement('div');actions.className='message-actions';const copy=document.createElement('button');copy.className='message-action';copy.textContent='Копировать';copy.dataset.copyMessage=msg.id||'';const save=document.createElement('button');save.className='message-action';save.textContent='Сохранить в библиотеку';save.dataset.saveMessage=msg.id||'';actions.append(copy,save);main.append(actions);}
     wrap.append(avatar,main);return wrap;
   }
@@ -398,13 +400,13 @@
   function finishStream(stream){stream.cursor.remove();stream.content.innerHTML=renderMarkdown(stream.msg.content);stream.msg.createdAt=stream.msg.createdAt||Date.now();saveState();renderHistory();scrollToBottom(false);}
   async function sendMessage(forcedText){
     if(sending)return;
-    const input=$('#messageInput');const message=(forcedText??input.value).trim();if(!message)return;
+    const input=$('#messageInput');const attachmentsToSend=pendingAttachments.slice();const typedMessage=(forcedText??input.value).trim();const message=typedMessage||(attachmentsToSend.some(item=>item.kind==='image')?'Проанализируй прикреплённое изображение.':attachmentsToSend.length?'Прочитай и проанализируй прикреплённые файлы.':'');if(!message)return;
     if(message.length>8000){toast('Сообщение слишком длинное. Лимит — 8000 символов.','error');return;}
     if(activeView!=='chat')setView('chat');
     let c=currentConversation();if(!c){createConversation();c=currentConversation();}
-    c.messages.push({id:uid(),role:'user',content:message,createdAt:Date.now()});
+    c.messages.push({id:uid(),role:'user',content:message,createdAt:Date.now(),attachments:attachmentsToSend.map(attachmentMetadata)});
     if(c.title==='Новый диалог'){c.title=message.replace(/\s+/g,' ').slice(0,52)+(message.length>52?'…':'');}
-    c.updatedAt=Date.now();saveState();input.value='';resizeInput();$('#sendBtn').disabled=true;renderHistory();renderConversation();
+    c.updatedAt=Date.now();saveState();input.value='';clearPendingAttachments();resizeInput();$('#sendBtn').disabled=true;renderHistory();renderConversation();
     sending=true;$('#sendBtn').innerHTML='<span>Стоп</span><span class="send-arrow">■</span>';$('#sendBtn').disabled=false;$('#sendBtn').setAttribute('aria-label','Остановить ответ');
     abortController=new AbortController();const timer=setTimeout(()=>abortController?.abort('timeout'),120000);
     const typing=createTypingBubble();let liveStream=null;currentThinking=$('#thinkToggle').getAttribute('aria-pressed')==='true';
@@ -413,7 +415,10 @@
       const requestMessage=message;
       const url=`${state.apiEndpoint.replace(/\/$/,'')}/api/chat?stream=1`;
       const currentHistory=[...history,{role:'user',content:requestMessage}];
-      const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',Accept:'text/event-stream',...(cloudSession?.token?{Authorization:`Bearer ${cloudSession.token}`}:{})},body:JSON.stringify({message:requestMessage,history,messages:currentHistory,stream:true,mode:currentThinking?'deep':'balanced',deepReasoning:currentThinking,reasoning:currentThinking?'deep':'balanced',reasoningEffort:currentThinking?'high':'low',maxTokens:currentThinking?4096:1536}),signal:abortController.signal,cache:'no-store'});
+      const imageAttachment=attachmentsToSend.find(item=>item.kind==='image');
+      const attachmentText=attachmentsToSend.filter(item=>item.kind==='text').map(item=>'FILE: '+item.name+'\n'+item.text).join('\n\n');
+      const requestBody={message:requestMessage,history,messages:currentHistory,stream:true,mode:currentThinking?'deep':'balanced',deepReasoning:currentThinking,reasoning:currentThinking?'deep':'balanced',reasoningEffort:currentThinking?'high':'low',maxTokens:currentThinking?4096:1536,...(imageAttachment?{image:imageAttachment.dataUrl}:{}),...(attachmentText?{attachmentText}: {})};
+      const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',Accept:'text/event-stream',...(cloudSession?.token?{Authorization:`Bearer ${cloudSession.token}`}:{})},body:JSON.stringify(requestBody),signal:abortController.signal,cache:'no-store'});
       if(!response.ok){let reason=`HTTP ${response.status}`;try{const body=await response.json();reason=body.error||body.code||reason;}catch{}throw new Error(reason);}
       const contentType=response.headers.get('Content-Type')||'';
       typing.wrap.remove();
@@ -429,7 +434,7 @@
       if($('#conversation').contains(stream.node))finishStream(stream);liveStream=null;
       const now=currentConversation();if(now){now.updatedAt=Date.now();saveState();}
     }catch(error){typing.wrap.remove();if(liveStream){liveStream.cursor?.remove();if(!liveStream.msg.content.trim()){const c3=currentConversation();if(c3)c3.messages=c3.messages.filter(m=>m.id!==liveStream.msg.id);liveStream.node.remove();}else{saveState();if($('#conversation').contains(liveStream.node))finishStream(liveStream);}}const cancelled=error?.name==='AbortError'||abortController?.signal.aborted;if(cancelled){toast('Генерация остановлена.');}else{const errMsg=error?.message==='Failed to fetch'?'Не удалось подключиться к KOKTUR CORE. Проверь интернет и настройки адреса сервера.':`Не удалось получить ответ: ${error?.message||'неизвестная ошибка'}`;toast(errMsg,'error');const c2=currentConversation();if(c2){c2.messages.push({id:uid(),role:'assistant',content:`Не получилось получить ответ. ${errMsg}`,createdAt:Date.now(),error:true});c2.updatedAt=Date.now();saveState();renderConversation();}}
-    }finally{clearTimeout(timer);sending=false;abortController=null;$('#sendBtn').innerHTML='<span>Отправить</span><span class="send-arrow">↗</span>';$('#sendBtn').setAttribute('aria-label','Отправить сообщение');$('#sendBtn').disabled=!$('#messageInput').value.trim();$('#messageInput').focus();}
+    }finally{clearTimeout(timer);sending=false;abortController=null;$('#sendBtn').innerHTML='<span>Отправить</span><span class="send-arrow">↗</span>';$('#sendBtn').setAttribute('aria-label','Отправить сообщение');$('#sendBtn').disabled=(!$('#messageInput').value.trim()&&!pendingAttachments.length);$('#messageInput').focus();}
   }
   function extractDelta(obj){
     if(typeof obj==='string')return obj;
@@ -444,11 +449,162 @@
     if(Array.isArray(obj.content)){const joined=obj.content.map(item=>typeof item?.text==='string'?item.text:'').join('');if(joined)return joined;}
     return '';
   }
-  function resizeInput(){const el=$('#messageInput');el.style.height='auto';el.style.height=`${Math.min(el.scrollHeight,180)}px`;$('#sendBtn').disabled=sending?!sending:!el.value.trim();}
+  function resizeInput(){const el=$('#messageInput');el.style.height='auto';el.style.height=`${Math.min(el.scrollHeight,180)}px`;$('#sendBtn').disabled=sending?!sending:(!el.value.trim()&&!pendingAttachments.length);}
   function stopGeneration(){if(sending&&abortController){abortController.abort();toast('Останавливаю генерацию…');}}
   async function copyText(text){try{await navigator.clipboard.writeText(text);toast('Скопировано.');}catch{const input=document.createElement('textarea');input.value=text;document.body.append(input);input.select();const ok=document.execCommand('copy');input.remove();toast(ok?'Скопировано.':'Не удалось скопировать.','error');}}
   function downloadJson(data,filename){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   function saveToLibrary(id){const msg=state.conversations.flatMap(c=>c.messages).find(m=>m.id===id);if(!msg||msg.role!=='assistant')return;state.library.push({id:uid(),title:msg.content.split('\n')[0].slice(0,65)||'Ответ KOKTUR',content:msg.content,createdAt:Date.now()});state.library=state.library.slice(-100);saveState();toast('Ответ добавлен в библиотеку.');}
+  const MAX_IMAGE_BYTES = 2_300_000;
+  const MAX_TEXT_FILE_BYTES = 200_000;
+  const MAX_ATTACHMENT_TEXT_CHARS = 6_000;
+  const MAX_PENDING_ATTACHMENTS = 4;
+  const TEXT_FILE_EXTENSIONS = new Set(['txt','md','csv','json','log','xml','html','js','ts','css','py','java','kt','sh','sql','yml','yaml','toml','ini','properties']);
+
+  function attachmentMetadata(item){
+    return {id:item.id,name:item.name,kind:item.kind,type:item.type||'',size:Number(item.size)||0};
+  }
+  function setAttachmentMenu(open){
+    const menu=$('#attachmentMenu'),button=$('#attachHint');
+    if(!menu||!button)return;
+    menu.hidden=!open;button.setAttribute('aria-expanded',String(open));
+  }
+  function renderAttachmentTray(){
+    const tray=$('#attachmentTray');if(!tray)return;
+    tray.replaceChildren();tray.hidden=pendingAttachments.length===0;
+    for(const item of pendingAttachments){
+      const chip=document.createElement('div');chip.className='attachment-chip';
+      const icon=document.createElement('span');icon.className='attachment-chip-icon';icon.textContent=item.kind==='image'?'▧':'▤';
+      const details=document.createElement('span');details.className='attachment-chip-details';
+      const name=document.createElement('strong');name.textContent=item.name;
+      const meta=document.createElement('small');meta.textContent=item.kind==='image'?'Изображение · будет отправлено Vision-модели':'Текст · будет прочитан KOKTUR';
+      details.append(name,meta);
+      const remove=document.createElement('button');remove.type='button';remove.className='attachment-remove';remove.dataset.removeAttachment=item.id;remove.setAttribute('aria-label','Удалить вложение '+item.name);remove.textContent='×';
+      chip.append(icon,details,remove);tray.append(chip);
+    }
+    resizeInput();
+  }
+  function clearPendingAttachments(){
+    pendingAttachments=[];renderAttachmentTray();
+  }
+  function addAttachment(item){
+    if(pendingAttachments.length>=MAX_PENDING_ATTACHMENTS){toast('Можно добавить не более четырёх вложений за раз.','error');return false;}
+    pendingAttachments.push(item);renderAttachmentTray();toast('Добавлено: '+item.name);return true;
+  }
+  function blobToDataUrl(blob){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>typeof reader.result==='string'?resolve(reader.result):reject(new Error('Не удалось прочитать изображение.'));
+      reader.onerror=()=>reject(new Error('Не удалось прочитать изображение.'));
+      reader.readAsDataURL(blob);
+    });
+  }
+  function canvasToBlob(canvas,quality){
+    return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Браузер не смог обработать изображение.')),'image/jpeg',quality));
+  }
+  async function imageBlobToAttachment(blob,name='image.jpg'){
+    if(!blob||!String(blob.type||'').startsWith('image/'))throw new Error('Выбери файл изображения.');
+    if(blob.size>20*1024*1024)throw new Error('Исходное изображение больше 20 МБ.');
+    let bitmap=null,objectUrl='';
+    try{
+      let width=0,height=0,drawSource=null;
+      if('createImageBitmap' in window){
+        bitmap=await createImageBitmap(blob);width=bitmap.width;height=bitmap.height;drawSource=bitmap;
+      }else{
+        objectUrl=URL.createObjectURL(blob);
+        const image=await new Promise((resolve,reject)=>{
+          const element=new Image();element.onload=()=>resolve(element);element.onerror=()=>reject(new Error('Формат изображения не поддерживается браузером.'));element.src=objectUrl;
+        });
+        width=image.naturalWidth;height=image.naturalHeight;drawSource=image;
+      }
+      if(!width||!height)throw new Error('Не удалось определить размер изображения.');
+      let scale=Math.min(1,1280/Math.max(width,height)),quality=.88,output=null;
+      const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
+      if(!ctx)throw new Error('Обработка изображения недоступна.');
+      for(let attempt=0;attempt<7;attempt++){
+        canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(drawSource,0,0,canvas.width,canvas.height);
+        output=await canvasToBlob(canvas,quality);
+        if(output.size<=MAX_IMAGE_BYTES)break;
+        if(quality>.64)quality-=.08;else scale*=.82;
+      }
+      if(!output||output.size>MAX_IMAGE_BYTES)throw new Error('Не удалось сжать фото до безопасного размера. Выбери изображение поменьше.');
+      const dataUrl=await blobToDataUrl(output);
+      const existingImage=pendingAttachments.findIndex(item=>item.kind==='image');
+      if(existingImage>=0)pendingAttachments.splice(existingImage,1);
+      addAttachment({id:uid(),name:String(name||'image.jpg').slice(0,120),kind:'image',type:'image/jpeg',size:output.size,dataUrl});
+    }finally{
+      if(bitmap)bitmap.close?.();
+      if(objectUrl)URL.revokeObjectURL(objectUrl);
+    }
+  }
+  async function handleImageSelection(fileList){
+    const files=[...(fileList||[])].filter(file=>String(file.type||'').startsWith('image/'));
+    if(!files.length)return;
+    if(files.length>1)toast('Для одного запроса выбери одно фото. Будет добавлено первое изображение.');
+    try{await imageBlobToAttachment(files[0],files[0].name);}catch(error){toast(error.message||'Не удалось добавить фото.','error');}
+  }
+  async function handleTextFiles(fileList){
+    const files=[...(fileList||[])];
+    for(const file of files){
+      if(pendingAttachments.length>=MAX_PENDING_ATTACHMENTS){toast('Достигнут лимит вложений.','error');break;}
+      const extension=String(file.name||'').split('.').pop().toLowerCase();
+      if(!TEXT_FILE_EXTENSIONS.has(extension)){toast('Формат «.'+extension+'» пока не поддерживается. Выбери TXT, MD, CSV, JSON или текстовый файл с кодом.','error');continue;}
+      if(file.size>MAX_TEXT_FILE_BYTES){toast('Файл «'+file.name+'» больше 200 КБ. Раздели его на части.','error');continue;}
+      try{
+        const text=await file.text();
+        if(text.includes('\0')){toast('Файл «'+file.name+'» похож на бинарный и не будет прочитан.','error');continue;}
+        const used=pendingAttachments.filter(item=>item.kind==='text').reduce((sum,item)=>sum+item.text.length,0);
+        const remaining=Math.max(0,MAX_ATTACHMENT_TEXT_CHARS-used);
+        if(!remaining){toast('Лимит текста вложений — 6000 символов.','error');break;}
+        const clipped=text.slice(0,remaining);
+        if(!clipped.trim()){toast('Файл «'+file.name+'» пустой.');continue;}
+        const added=addAttachment({id:uid(),name:file.name.slice(0,120),kind:'text',type:file.type||'text/plain',size:file.size,text:clipped});
+        if(added&&clipped.length<text.length)toast('Файл «'+file.name+'» обрезан до общего лимита 6000 символов.');
+      }catch{toast('Не удалось прочитать файл «'+file.name+'».','error');}
+    }
+  }
+  async function startCamera(){
+    setAttachmentMenu(false);
+    if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){
+      $('#cameraInput').click();toast('Открыл стандартный выбор камеры или фото.');return;
+    }
+    const status=$('#cameraStatus');if(status)status.textContent='Запрашиваю доступ к камере…';
+    try{
+      cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      const video=$('#cameraVideo');video.srcObject=cameraStream;openDialog('cameraModal');
+      await video.play().catch(()=>{});
+      if(status)status.textContent='Наведи камеру и нажми «Сделать фото».';
+    }catch(error){
+      stopCamera();
+      const reason=error?.name==='NotAllowedError'?'Разреши доступ к камере в настройках браузера.':error?.name==='NotFoundError'?'Камера не найдена на этом устройстве.':'Не удалось включить камеру.';
+      if(status)status.textContent=reason;
+      toast(reason+' Можно выбрать фото из галереи.','error');
+    }
+  }
+  function stopCamera(){
+    if(cameraStream){cameraStream.getTracks().forEach(track=>track.stop());cameraStream=null;}
+    const video=$('#cameraVideo');if(video)video.srcObject=null;
+  }
+  async function captureCameraFrame(){
+    const video=$('#cameraVideo');
+    if(!video?.videoWidth||!video?.videoHeight){toast('Камера ещё не готова.','error');return;}
+    const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    const ctx=canvas.getContext('2d');if(!ctx){toast('Не удалось сделать снимок.','error');return;}
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    try{
+      const blob=await canvasToBlob(canvas,.88);stopCamera();$('#cameraModal').close();await imageBlobToAttachment(blob,'camera.jpg');
+    }catch(error){toast(error.message||'Не удалось сохранить снимок.','error');}
+  }
+  function renderMessageAttachments(target,items){
+    if(!Array.isArray(items)||!items.length)return;
+    const row=document.createElement('div');row.className='message-attachments';
+    for(const item of items.slice(0,MAX_PENDING_ATTACHMENTS)){
+      const chip=document.createElement('span');chip.className='message-attachment-chip';
+      chip.textContent=(item.kind==='image'?'▧':'▤')+' '+(item.name||'Вложение');row.append(chip);
+    }
+    target.append(row);
+  }
+
   function bindEvents(){
     $('#newChatBtn').addEventListener('click',createConversation);
     $('#openSidebar').addEventListener('click',toggleSidebar);$('#closeSidebar').addEventListener('click',closeSidebar);$('#mobileScrim').addEventListener('click',closeSidebar);
@@ -467,7 +623,18 @@
     $('#messageInput').addEventListener('input',resizeInput);
     $('#messageInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage();}});
     $('#thinkToggle').addEventListener('click',()=>{state.deepReasoning=$('#thinkToggle').getAttribute('aria-pressed')!=='true';$('#thinkToggle').setAttribute('aria-pressed',String(state.deepReasoning));$('#thinkToggle').classList.toggle('is-active',state.deepReasoning);saveState();toast(state.deepReasoning?'Глубокое размышление включено: следующий запрос отправится с reasoning_effort=high.':'Обычный режим включён.');});
-    $('#attachHint').addEventListener('click',()=>toast('Загрузка файлов пока не подключена к серверному API.'));
+    $('#attachHint').addEventListener('click',e=>{e.stopPropagation();setAttachmentMenu($('#attachmentMenu').hidden);});
+    $('#cameraAttachBtn').addEventListener('click',startCamera);
+    $('#photoAttachBtn').addEventListener('click',()=>{setAttachmentMenu(false);$('#photoInput').click();});
+    $('#fileAttachBtn').addEventListener('click',()=>{setAttachmentMenu(false);$('#fileInput').click();});
+    $('#pluginAttachBtn').addEventListener('click',()=>{setAttachmentMenu(false);openDialog('pluginModal');});
+    $('#cameraInput').addEventListener('change',async e=>{await handleImageSelection(e.target.files);e.target.value='';});
+    $('#photoInput').addEventListener('change',async e=>{await handleImageSelection(e.target.files);e.target.value='';});
+    $('#fileInput').addEventListener('change',async e=>{await handleTextFiles(e.target.files);e.target.value='';});
+    $('#captureCameraBtn').addEventListener('click',captureCameraFrame);
+    $('#cameraModal').addEventListener('close',stopCamera);
+    $('#attachmentTray').addEventListener('click',e=>{const button=e.target.closest('[data-remove-attachment]');if(!button)return;pendingAttachments=pendingAttachments.filter(item=>item.id!==button.dataset.removeAttachment);renderAttachmentTray();});
+    document.addEventListener('click',e=>{if(!e.target.closest('#composerShell'))setAttachmentMenu(false);});
     $('#historySearch').addEventListener('input',renderHistory);$('#clearSearch').addEventListener('click',()=>{$('#historySearch').value='';renderHistory();$('#historySearch').focus();});
     $$('.nav-item').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
     $$('[data-close]').forEach(b=>b.addEventListener('click',()=>{const d=$(`#${b.dataset.close}`);if(d?.open)d.close();if(d?.id==='themeModal')$('#themeTrigger').setAttribute('aria-expanded','false');}));
@@ -478,7 +645,7 @@
     $('#exportData').addEventListener('click',()=>downloadJson(state,`koktur-export-${new Date().toISOString().slice(0,10)}.json`));
     $('#clearAllData').addEventListener('click',()=>{if(!confirm('Удалить историю, библиотеку и локальные настройки KOKTUR из этого браузера? Это действие нельзя отменить.'))return;localStorage.removeItem(STORAGE_KEY);state=defaultState();saveState();applyState();$('#settingsModal').close();toast('Локальные данные очищены.');});
     document.addEventListener('click',e=>{const openChat=e.target.closest('[data-open-chat]');if(openChat){state.currentId=openChat.dataset.openChat;activeView='chat';saveState();showChatView();renderHistory();renderConversation();closeSidebar();return;}const renameChat=e.target.closest('[data-rename-chat]');if(renameChat){e.preventDefault();e.stopPropagation();renameConversation(renameChat.dataset.renameChat);return;}const deleteChat=e.target.closest('[data-delete-chat]');if(deleteChat){e.preventDefault();e.stopPropagation();deleteConversation(deleteChat.dataset.deleteChat);return;}const copy=e.target.closest('[data-copy-message]');if(copy){const id=copy.dataset.copyMessage;const msg=state.conversations.flatMap(c=>c.messages).find(m=>m.id===id);if(msg)copyText(msg.content);return;}const save=e.target.closest('[data-save-message]');if(save){saveToLibrary(save.dataset.saveMessage);return;}const code=e.target.closest('[data-copy-code]');if(code){const n=Number(code.dataset.copyCode);const blocks=[...e.target.closest('.message-main').querySelectorAll('.code-block pre code')];if(blocks[n])copyText(blocks[n].textContent);return;}const lib=e.target.closest('[data-library-copy]');if(lib){const item=state.library.find(i=>i.id===lib.dataset.libraryCopy);if(item)copyText(item.content);}});
-    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();createConversation();}if(e.key==='Escape')closeSidebar();});
+    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();createConversation();}if(e.key==='Escape'){setAttachmentMenu(false);closeSidebar();}});
     window.addEventListener('resize',()=>{if(innerWidth>760)closeSidebar();});
   }
   function chooseSettingsTab(tab){$$('.settings-tab').forEach(b=>b.classList.toggle('active',b.dataset.settingsTab===tab));$$('[data-settings-pane]').forEach(p=>p.hidden=p.dataset.settingsPane!==tab);}

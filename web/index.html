@@ -190,13 +190,37 @@
         <div class="composer-shell" id="composerShell">
           <div class="composer-tools"><span class="composer-context"><span class="status-light"></span> KOKTUR CORE <span class="tiny-divider">/</span> <span id="composerTheme">KOKTUR</span></span><span class="composer-hint">Enter — отправить <span>·</span> Shift + Enter — перенос</span></div>
           <textarea id="messageInput" rows="1" maxlength="8000" placeholder="Спроси KOKTUR о чём угодно…" aria-label="Введите сообщение"></textarea>
-          <div class="composer-bottom"><div class="composer-left"><button class="tool-button" id="attachHint" title="Прикрепление файлов пока не подключено" aria-label="Прикрепление файлов пока не подключено">＋ <span>Инструменты</span></button><button class="tool-button" id="thinkToggle" aria-pressed="false"><span class="sparkle">✧</span> Глубокое размышление <span class="toggle-dot"></span></button></div><button class="send-button" id="sendBtn" aria-label="Отправить сообщение" disabled><span>Отправить</span><span class="send-arrow">↗</span></button></div>
+          <div class="attachment-tray" id="attachmentTray" aria-live="polite" hidden></div>
+          <div class="attachment-menu" id="attachmentMenu" role="menu" aria-labelledby="attachHint" hidden>
+            <button type="button" role="menuitem" id="cameraAttachBtn"><span class="attachment-menu-icon">⌖</span><span><strong>Камера</strong><small>Сделать снимок и отправить модели</small></span></button>
+            <button type="button" role="menuitem" id="photoAttachBtn"><span class="attachment-menu-icon">▧</span><span><strong>Фото</strong><small>Выбрать изображение с устройства</small></span></button>
+            <button type="button" role="menuitem" id="fileAttachBtn"><span class="attachment-menu-icon">▤</span><span><strong>Файлы</strong><small>TXT, MD, CSV, JSON и текстовый код</small></span></button>
+            <button type="button" role="menuitem" id="pluginAttachBtn"><span class="attachment-menu-icon">⌘</span><span><strong>Плагины</strong><small>Посмотреть доступные подключения</small></span></button>
+            <div class="attachment-menu-note">Фото и текст файлов отправятся в KOKTUR CORE только после нажатия «Отправить». Не прикладывай конфиденциальные документы.</div>
+          </div>
+          <input id="cameraInput" class="visually-hidden-input" type="file" accept="image/*" capture="environment" aria-label="Сделать фото камерой">
+          <input id="photoInput" class="visually-hidden-input" type="file" accept="image/*" aria-label="Выбрать фото">
+          <input id="fileInput" class="visually-hidden-input" type="file" multiple accept=".txt,.md,.csv,.json,.log,.xml,.html,.js,.ts,.css,.py,.java,.kt,.sh,.sql,.yml,.yaml,.toml,.ini,.properties,text/plain,text/markdown,text/csv,application/json,application/xml" aria-label="Выбрать текстовые файлы">
+          <div class="composer-bottom"><div class="composer-left"><button class="tool-button attach-button" id="attachHint" type="button" title="Добавить фото или файл" aria-label="Добавить фото или файл" aria-haspopup="true" aria-expanded="false">＋ <span>Добавить</span></button><button class="tool-button" id="thinkToggle" aria-pressed="false"><span class="sparkle">✧</span> <span>Глубокое размышление</span><span class="toggle-dot"></span></button></div><button class="send-button" id="sendBtn" aria-label="Отправить сообщение" disabled><span>Отправить</span><span class="send-arrow">↗</span></button></div>
         </div>
         <div class="disclaimer">KOKTUR может ошибаться. Проверяй важную информацию и не отправляй конфиденциальные данные.</div>
         <div class="studio-credit">CRAFTED WITH INTENT BY <strong>VENDATELO STUDIO</strong></div>
       </footer>
     </main>
   </div>
+
+  <dialog class="modal camera-modal" id="cameraModal" aria-labelledby="cameraTitle">
+    <div class="modal-header"><div><div class="eyebrow left-eyebrow">KOKTUR VISION</div><h2 id="cameraTitle">Сделать снимок</h2><p>Камера включится только после твоего нажатия. Снимок будет отправлен модели вместе с запросом.</p></div><button class="icon-button" data-close="cameraModal" aria-label="Закрыть">×</button></div>
+    <video id="cameraVideo" autoplay playsinline muted></video>
+    <div class="modal-actions"><button class="secondary-button" data-close="cameraModal">Отмена</button><button class="primary-button" id="captureCameraBtn">Сделать фото <span>◎</span></button></div>
+    <p class="test-result" id="cameraStatus" aria-live="polite"></p>
+  </dialog>
+
+  <dialog class="modal plugin-modal" id="pluginModal" aria-labelledby="pluginTitle">
+    <div class="modal-header"><div><div class="eyebrow left-eyebrow">EXTENSIONS</div><h2 id="pluginTitle">Плагины KOKTUR</h2><p>Здесь будут подключения к дополнительным сервисам и инструментам.</p></div><button class="icon-button" data-close="pluginModal" aria-label="Закрыть">×</button></div>
+    <div class="plugin-empty"><span>⌘</span><strong>Подключения ещё не активированы</strong><p>Сейчас KOKTUR использует собственное ядро. Внешние плагины появятся после настройки безопасных подключений и разрешений.</p></div>
+    <div class="modal-actions"><button class="primary-button" data-close="pluginModal">Понятно</button></div>
+  </dialog>
 
   <dialog class="modal theme-modal" id="themeModal" aria-labelledby="themeTitle"><div class="modal-header"><div><div class="eyebrow left-eyebrow">PERSONALISE YOUR SPACE</div><h2 id="themeTitle">Выбери атмосферу</h2><p>Цвета, детали и фон меняются вместе с темой.</p></div><button class="icon-button" data-close="themeModal" aria-label="Закрыть">×</button></div><div class="theme-grid" id="themeGrid"></div><div class="modal-footnote">Декорации работают на фоне и не перекрывают текст.</div></dialog>
 
