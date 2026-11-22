@@ -1,0 +1,32 @@
+name: KOKTUR Web Quality Checks
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "web/**"
+      - ".github/workflows/web-quality.yml"
+  push:
+    branches: [main, master]
+    paths:
+      - "web/**"
+      - ".github/workflows/web-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-tests:
+    name: Static web UI tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate KOKTUR web UI
+        run: node --test web/site.test.cjs
